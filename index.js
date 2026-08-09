@@ -18,16 +18,18 @@ const PLAYERS = [
     key: 'mpv',
     label: 'mpv',
     bin: 'mpv',
-    // mpv's defaults don't pre-buffer much or auto-reconnect on network
-    // hiccups, which shows up as stutter/rebuffering on a live stream over
-    // Wi-Fi. Ask for a bigger read-ahead cache and let ffmpeg reconnect
-    // instead of just dying on a dropped connection.
-    args: [
-      '--cache=yes',
-      '--demuxer-max-bytes=80MiB',
-      '--demuxer-readahead-secs=30',
-      '--stream-lavf-o=reconnect=1,reconnect_streamed=1,reconnect_delay_max=5',
-    ],
+    // No extra flags: mpv plays this live HLS stream correctly on its own.
+    // A previous "buffering fix" attempt added --stream-lavf-o=reconnect=1
+    // and --loop-file=inf here, which actively broke playback - HLS live
+    // playback works by mpv repeatedly re-fetching a small, complete .m3u8
+    // file, and each fetch naturally hits EOF when done (that's normal, not
+    // a dropped connection). reconnect=1 made ffmpeg treat every one of
+    // those routine completions as an error and retry/give up
+    // ("Will reconnect ... error=End of file" / "Failed to reload playlist"
+    // in the logs), and loop-file=inf tried to restart the stream from the
+    // beginning on every one of those same EOF events. Together they caused
+    // the exact stop-after-~10s crash they were meant to fix.
+    args: [],
   },
   {
     key: 'vlc',
@@ -198,7 +200,7 @@ function DetailPane({ match, imageWidthCols }) {
     { flexDirection: 'column' },
     h(
       Box,
-      { marginBottom: 1, height: IMAGE_HEIGHT_ROWS + 1 },
+      { marginBottom: 1, height: IMAGE_HEIGHT_ROWS + 1, overflow: 'hidden' },
       loading
         ? h(Text, { dimColor: true }, 'Loading poster...')
         : poster
