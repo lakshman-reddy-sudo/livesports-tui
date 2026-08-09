@@ -1,0 +1,21 @@
+{
+  "name": "livesports-tui",
+  "version": "1.0.0",
+  "description": "Terminal UI for live/upcoming Fancode and SonyLiv streams, playable via mpv/VLC",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "livesports-tui": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ink": "^7.1.1",
+    "react": "^19.2.8",
+    "terminal-image": "^5.0.1"
+  }
+}
