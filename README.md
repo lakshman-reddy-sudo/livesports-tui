@@ -28,7 +28,7 @@ brew install mpv
 brew install --cask vlc
 
 # the app
-git clone https://github.com/<your-username>/livesports-tui.git
+git clone https://github.com/lakshman-reddy-sudo/livesports-tui.git
 cd livesports-tui
 npm install
 ```
@@ -46,7 +46,7 @@ sudo apt install -y mpv
 sudo apt install -y vlc
 
 # the app
-git clone https://github.com/<your-username>/livesports-tui.git
+git clone https://github.com/lakshman-reddy-sudo/livesports-tui.git
 cd livesports-tui
 npm install
 ```
@@ -57,7 +57,7 @@ npm install
 sudo pacman -S nodejs npm mpv
 # or: sudo pacman -S vlc
 
-git clone https://github.com/<your-username>/livesports-tui.git
+git clone https://github.com/lakshman-reddy-sudo/livesports-tui.git
 cd livesports-tui
 npm install
 ```
@@ -73,7 +73,7 @@ winget install mpv.net
 # or
 winget install VideoLAN.VLC
 
-git clone https://github.com/<your-username>/livesports-tui.git
+git clone https://github.com/lakshman-reddy-sudo/livesports-tui.git
 cd livesports-tui
 npm install
 ```
