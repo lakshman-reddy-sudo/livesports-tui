@@ -124,3 +124,7 @@ If you want the poster bigger/clearer within that constraint, widen your termina
 - [Ink](https://github.com/vadimdemedes/ink) — React for CLIs, powers the split-pane TUI
 - [terminal-image](https://github.com/sindresorhus/terminal-image) — poster rendering
 - [mpv](https://mpv.io/) / [VLC](https://www.videolan.org/vlc/) — actual playback
+
+## License
+
+[MIT](LICENSE)
