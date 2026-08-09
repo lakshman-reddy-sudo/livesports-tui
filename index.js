@@ -18,18 +18,24 @@ const PLAYERS = [
     key: 'mpv',
     label: 'mpv',
     bin: 'mpv',
-    // No extra flags: mpv plays this live HLS stream correctly on its own.
-    // A previous "buffering fix" attempt added --stream-lavf-o=reconnect=1
-    // and --loop-file=inf here, which actively broke playback - HLS live
-    // playback works by mpv repeatedly re-fetching a small, complete .m3u8
-    // file, and each fetch naturally hits EOF when done (that's normal, not
-    // a dropped connection). reconnect=1 made ffmpeg treat every one of
-    // those routine completions as an error and retry/give up
-    // ("Will reconnect ... error=End of file" / "Failed to reload playlist"
-    // in the logs), and loop-file=inf tried to restart the stream from the
-    // beginning on every one of those same EOF events. Together they caused
-    // the exact stop-after-~10s crash they were meant to fix.
-    args: [],
+    // mpv's default cache margin against the HLS live edge is thin (often
+    // under 1s), so brief server/CDN jitter can empty it and trigger a
+    // visible rebuffer even on a fast connection - confirmed directly via
+    // mpv's own paused-for-cache/demuxer-cache-duration IPC properties.
+    // --demuxer-readahead-secs/--demuxer-max-bytes just widen that cushion
+    // (verified over 40s+ of real playback on both a cricket and a MotoGP
+    // stream: cache builds to 8-15s, no stalls). This is NOT the same as the
+    // --stream-lavf-o=reconnect=1 / --loop-file=inf combo from an earlier
+    // attempt, which actively broke playback - HLS live playback works by
+    // mpv repeatedly re-fetching a small, complete .m3u8 file, and each
+    // fetch naturally hits EOF when done (normal, not a dropped connection).
+    // reconnect=1 made ffmpeg treat every one of those routine completions
+    // as an error and retry/give up ("Will reconnect ... error=End of file"
+    // / "Failed to reload playlist" in the logs), and loop-file=inf tried to
+    // restart the stream from the beginning on every one of those same EOF
+    // events - together causing the stop-after-~10s crash. Neither of those
+    // two flags are used here.
+    args: ['--cache=yes', '--demuxer-max-bytes=60MiB', '--demuxer-readahead-secs=15'],
   },
   {
     key: 'vlc',
