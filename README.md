@@ -1,6 +1,6 @@
 # livesports-tui
 
-https://github.com/lakshman-reddy-sudo/livesports-tui/raw/main/demo.mp4
+![livesports-tui Demo](./demo.mp4)
 
 A terminal UI for browsing live and upcoming Fancode / SonyLiv matches and playing them directly with `mpv` or `VLC` — no browser, no Stremio.
 
