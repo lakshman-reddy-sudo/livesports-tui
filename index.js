@@ -2,6 +2,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { render, Box, Text, useApp, useInput, useStdout } from 'ink';
 import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 import terminalImage from 'terminal-image';
 
 const h = React.createElement;
@@ -9,9 +11,35 @@ const h = React.createElement;
 const FANCODE_EVENTS_URL = 'https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.json';
 const SONYLIV_EVENTS_URL = 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json';
 
-const VLC_PATH = process.platform === 'darwin'
-  ? '/Applications/VLC.app/Contents/MacOS/VLC'
-  : 'vlc';
+function resolveVlcPath() {
+  if (process.platform === 'darwin') {
+    return '/Applications/VLC.app/Contents/MacOS/VLC';
+  }
+
+  if (process.platform === 'win32') {
+    const windowsPaths = [
+      process.env.ProgramW6432,
+      process.env.ProgramFiles,
+      process.env['ProgramFiles(x86)'],
+      process.env.LOCALAPPDATA &&
+        path.join(process.env.LOCALAPPDATA, 'Programs'),
+    ]
+      .filter(Boolean)
+      .map((basePath) =>
+        path.join(basePath, 'VideoLAN', 'VLC', 'vlc.exe')
+      );
+
+    const installedPath = windowsPaths.find((candidate) =>
+      fs.existsSync(candidate)
+    );
+
+    if (installedPath) return installedPath;
+  }
+
+  return 'vlc';
+}
+
+const VLC_PATH = resolveVlcPath();
 
 const PLAYERS = [
   {
