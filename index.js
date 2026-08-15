@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { render, Box, Text, useApp, useInput, useStdout } from 'ink';
 import { spawn } from 'child_process';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import terminalImage from 'terminal-image';
 
@@ -105,7 +106,26 @@ async function loadMatches() {
   const matches = [];
 
   for (const m of fancode) {
-    if (!m.dai_url) continue;
+    // Prefer akamai_m3u8_hex: decode the hex-encoded HLS master playlist,
+    // write it to a temp file, and hand that path to the player.  The old
+    // dai_url (in-mc-flive.fancode.com) resets the connection.
+    let streamUrl = null;
+    if (m.akamai_m3u8_hex) {
+      try {
+        const m3u8 = Buffer.from(m.akamai_m3u8_hex, 'hex').toString('utf-8');
+        const tmpFile = path.join(
+          os.tmpdir(),
+          `livesports-fancode-${m.match_id}.m3u8`
+        );
+        fs.writeFileSync(tmpFile, m3u8);
+        streamUrl = tmpFile;
+      } catch {
+        // fall through to dai_url
+      }
+    }
+    if (!streamUrl) streamUrl = m.dai_url;
+    if (!streamUrl) continue;
+
     matches.push({
       id: `fancode:${m.match_id}`,
       provider: 'Fancode',
@@ -118,12 +138,12 @@ async function loadMatches() {
       startTimeMs: parseFancodeTime(m.startTime),
       language: m.audioLanguageName || null,
       poster: m.src,
-      streamUrl: m.dai_url,
+      streamUrl,
     });
   }
 
   for (const m of sonyliv) {
-    if (!m.video_url) continue;
+    const streamUrl = m.video_url || m.dai_url || null;
     matches.push({
       id: `sonyliv:${m.contentId}`,
       provider: 'SonyLiv',
@@ -136,7 +156,7 @@ async function loadMatches() {
       startTimeMs: 0,
       language: m.audioLanguageName || null,
       poster: m.src,
-      streamUrl: m.video_url,
+      streamUrl,
     });
   }
 
@@ -249,7 +269,9 @@ function DetailPane({ match, imageWidthCols }) {
     h(Text, null, `Provider: ${match.provider}`),
     match.language ? h(Text, null, `Language: ${match.language}`) : null,
     h(Text, null, ' '),
-    h(Text, { dimColor: true }, 'Press Enter to choose a player and play')
+    match.streamUrl
+      ? h(Text, { dimColor: true }, 'Press Enter to choose a player and play')
+      : h(Text, { color: 'yellow' }, 'Stream not yet available')
   );
 }
 
@@ -316,7 +338,7 @@ function App() {
     if (key.downArrow) setIndex((i) => Math.min(matches.length - 1, i + 1));
     if (input === 'r') refresh();
     if (input === 'q' || key.escape) exit();
-    if (key.return && matches[index]) {
+    if (key.return && matches[index] && matches[index].streamUrl) {
       setPlayerIndex(0);
       setChoosingPlayer(true);
     }
