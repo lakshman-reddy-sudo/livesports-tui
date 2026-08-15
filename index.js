@@ -64,7 +64,7 @@ const PLAYERS = [
     // restart the stream from the beginning on every one of those same EOF
     // events - together causing the stop-after-~10s crash. Neither of those
     // two flags are used here.
-    args: ['--cache=yes', '--demuxer-max-bytes=60MiB', '--demuxer-readahead-secs=15'],
+    args: ['--cache=yes', '--demuxer-max-bytes=60MiB', '--demuxer-readahead-secs=15', '--demuxer-lavf-o=protocol_whitelist="file,http,https,tcp,tls,crypto"'],
   },
   {
     key: 'vlc',
