@@ -139,6 +139,7 @@ async function loadMatches() {
       language: m.audioLanguageName || null,
       poster: m.src,
       streamUrl,
+      userAgent: m['user-agent'] || null,
     });
   }
 
@@ -157,6 +158,7 @@ async function loadMatches() {
       language: m.audioLanguageName || null,
       poster: m.src,
       streamUrl,
+      userAgent: m['user-agent'] || null,
     });
   }
 
@@ -168,8 +170,16 @@ async function loadMatches() {
   return matches;
 }
 
-function playStream(url, playerBin, playerArgs, onExit) {
-  const player = spawn(playerBin, [...playerArgs, url], { stdio: 'inherit' });
+function playStream(url, playerBin, playerArgs, userAgent, onExit) {
+  const args = [...playerArgs];
+  if (userAgent) {
+    if (playerBin.includes('mpv')) {
+      args.push(`--user-agent=${userAgent}`);
+    } else if (playerBin.toLowerCase().includes('vlc')) {
+      args.push(`--http-user-agent=${userAgent}`);
+    }
+  }
+  const player = spawn(playerBin, [...args, url], { stdio: 'inherit' });
   player.on('error', (err) => {
     console.error(`Could not launch "${playerBin}": ${err.message}`);
     onExit(1);
@@ -328,7 +338,7 @@ function App() {
         // (bracketed paste / raw mode), then spawn.
         exit();
         process.stdout.write('\x1b[?2004l');
-        playStream(match.streamUrl, player.bin, player.args, (code) => process.exit(code));
+        playStream(match.streamUrl, player.bin, player.args, match.userAgent, (code) => process.exit(code));
       }
       return;
     }
